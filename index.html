@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Toko ESTI - JS Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .neo-card { background-color: #ffffff; border: 3px solid #0f172a; box-shadow: 5px 5px 0px #0f172a; }
+        .neo-btn { border: 3px solid #0f172a; box-shadow: 3px 3px 0px #0f172a; transition: all 0.1s ease; }
+        .neo-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #0f172a; }
+        .neo-input { border: 2.5px solid #0f172a; box-shadow: 2.5px 2.5px 0px #0f172a; }
+        .neo-input:focus { outline: none; box-shadow: 3.5px 3.5px 0px #22c55e; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-900 pb-12">
+
+    <div id="loginScreen" class="fixed inset-0 bg-amber-200 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-md neo-card rounded-2xl p-6 sm:p-8 bg-white">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-emerald-400 border-3 border-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-[4px_4px_0px_#0f172a]">
+                    <i class="fa-solid fa-store text-slate-900"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">ADMIN TOKO ESTI</h2>
+                <p class="text-xs font-bold text-slate-700 mt-1">Masuk untuk mengelola produk</p>
+            </div>
+
+            <div id="loginAlert" class="hidden mb-4 p-3 rounded-xl border-3 border-slate-900 font-bold text-xs bg-rose-300 text-slate-900 shadow-[3px_3px_0px_#0f172a]">
+                Username atau Password salah!
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-900 uppercase mb-1">Username</label>
+                    <input type="text" id="loginUsername" required placeholder="Masukkan Username" class="w-full neo-input rounded-xl px-4 py-3 text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-900 uppercase mb-1">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full neo-input rounded-xl px-4 py-3 text-sm font-bold">
+                </div>
+                <button type="submit" class="w-full neo-btn bg-emerald-400 hover:bg-emerald-500 py-3.5 text-slate-900 font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> MASUK DASHBOARD
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <header class="bg-amber-300 border-b-4 border-slate-900 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-emerald-400 border-3 border-slate-900 rounded-xl flex items-center justify-center font-black shadow-[3px_3px_0px_#0f172a]">
+                    <i class="fa-solid fa-boxes-stacked text-slate-900"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-base sm:text-lg leading-tight tracking-tight">KASIR / ADMIN TOKO</h1>
+                    <span class="text-[10px] font-bold bg-slate-900 text-amber-300 px-2 py-0.5 rounded-md">JS EXPORT MODE</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="downloadTXT()" class="neo-btn bg-sky-300 hover:bg-sky-400 text-slate-900 font-extrabold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> Unduh products.json.txt
+                </button>
+                <button onclick="handleLogout()" class="neo-btn bg-rose-400 hover:bg-rose-500 text-slate-900 font-extrabold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5">
+                    <i class="fa-solid fa-power-off"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <div class="lg:col-span-4">
+            <div class="neo-card rounded-2xl p-5 sticky top-20">
+                <h3 class="font-extrabold text-base border-b-3 border-slate-900 pb-2 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-square-plus text-emerald-600"></i> <span id="formTitle">Tambah Produk Baru</span>
+                </h3>
+
+                <form id="productForm" onsubmit="saveProduct(event)" class="space-y-3 text-xs">
+                    <input type="hidden" id="p_id">
+                    <div>
+                        <label class="font-extrabold uppercase">Nama Produk*</label>
+                        <input type="text" id="p_name" required placeholder="Contoh: Indomie Goreng" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-extrabold uppercase">Kategori*</label>
+                            <select id="p_category" required class="w-full neo-input rounded-xl px-2 py-2 mt-1 font-bold bg-white">
+                                <option value="Sembako">Sembako</option>
+                                <option value="Makanan Ringan">Makanan Ringan</option>
+                                <option value="Minuman">Minuman</option>
+                                <option value="Bumbu Dapur">Bumbu Dapur</option>
+                                <option value="Kebersihan">Kebersihan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-extrabold uppercase">Satuan*</label>
+                            <input type="text" id="p_unit" required placeholder="Pcs / Dus / Botol" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-extrabold uppercase">Harga Ecer (Rp)*</label>
+                            <input type="number" id="p_price" required placeholder="9000" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                        </div>
+                        <div>
+                            <label class="font-extrabold uppercase">Stok*</label>
+                            <select id="p_stock" class="w-full neo-input rounded-xl px-2 py-2 mt-1 font-bold bg-white">
+                                <option value="Tersedia">Tersedia</option>
+                                <option value="Habis">Habis</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 border-dashed border-slate-300 pt-2 my-2">
+                        <span class="font-black text-[10px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">Opsional: Harga Grosir / Dus</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-bold">Min. Pembelian Grosir</label>
+                            <input type="number" step="0.1" id="p_wholesaleMin" placeholder="24" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                        </div>
+                        <div>
+                            <label class="font-bold">Total Harga Grosir (Rp)</label>
+                            <input type="number" id="p_wholesalePrice" placeholder="100000" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold">Deskripsi Singkat</label>
+                        <input type="text" id="p_desc" placeholder="Rasa Soto Mie" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                    </div>
+
+                    <div class="pt-2 flex gap-2">
+                        <button type="submit" id="submitBtn" class="flex-1 neo-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Produk
+                        </button>
+                        <button type="button" id="cancelBtn" onclick="resetForm()" class="hidden neo-btn bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold px-3 py-2.5 rounded-xl text-xs">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8">
+            <div class="neo-card rounded-2xl p-5">
+                <div class="flex items-center justify-between border-b-3 border-slate-900 pb-3 mb-4">
+                    <h3 class="font-black text-base flex items-center gap-2">
+                        <i class="fa-solid fa-list text-amber-500"></i> Daftar Produk Memori Browser
+                    </h3>
+                    <span id="productCount" class="bg-emerald-300 text-slate-900 font-black text-xs px-2.5 py-1 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                        0 Barang
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 border-b-3 border-slate-900 text-[11px] font-black uppercase text-slate-700">
+                                <th class="p-2.5">ID</th>
+                                <th class="p-2.5">Produk</th>
+                                <th class="p-2.5">Kategori</th>
+                                <th class="p-2.5">Harga Ecer</th>
+                                <th class="p-2.5">Stok</th>
+                                <th class="p-2.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let envConfig = { ADMIN_USERNAME: "", ADMIN_PASSWORD: "" };
+        let products = [];
+
+        // Muat Konfigurasi .env dan Produk saat Pertama Dimuat
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadEnv();
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+            }
+            loadProducts();
+        });
+
+        // Pustaka Pembaca File .env yang Aman & Akurat
+        async function loadEnv() {
+            try {
+                const res = await fetch('.env');
+                if (res.ok) {
+                    const text = await res.text();
+                    text.split(/\r?\n/).forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine && !trimmedLine.startsWith('#')) {
+                            const [key, ...valParts] = trimmedLine.split('=');
+                            if (key && valParts.length > 0) {
+                                const cleanKey = key.trim();
+                                const cleanVal = valParts.join('=').trim().replace(/^["']|["']$/g, '');
+                                envConfig[cleanKey] = cleanVal;
+                            }
+                        }
+                    });
+                    console.log(".env berhasil dimuat! Config:", envConfig);
+                }
+            } catch (err) {
+                console.warn('File .env tidak ditemukan, menggunakan nilai fallback.');
+            }
+        }
+
+        // Autentikasi Login (Mendukung .env & Fallback)
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            if (!envConfig.ADMIN_USERNAME) {
+                await loadEnv();
+            }
+
+            const uInput = document.getElementById('loginUsername').value.trim();
+            const pInput = document.getElementById('loginPassword').value.trim();
+
+            const validUser = envConfig.ADMIN_USERNAME || "VaaaStore";
+            const validPass = envConfig.ADMIN_PASSWORD || "VaaaStore201207";
+
+            if (uInput === validUser && pInput === validPass) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('loginAlert').classList.add('hidden');
+            } else {
+                document.getElementById('loginAlert').classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        // Load Produk dari LocalStorage / products.json
+        async function loadProducts() {
+            const savedLocal = localStorage.getItem('esti_products');
+            if (savedLocal) {
+                products = JSON.parse(savedLocal);
+            } else {
+                try {
+                    const res = await fetch('products.json');
+                    if (res.ok) {
+                        products = await res.json();
+                        saveToLocalStorage();
+                    }
+                } catch (err) {
+                    console.log('File products.json belum ada.');
+                }
+            }
+            renderTable();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('esti_products', JSON.stringify(products));
+        }
+
+        // Render Tabel
+        function renderTable() {
+            const tbody = document.getElementById('productTableBody');
+            document.getElementById('productCount').textContent = products.length + ' Barang';
+            tbody.innerHTML = '';
+
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Belum ada produk. Silakan tambah produk baru!</td></tr>`;
+                return;
+            }
+
+            products.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-2.5 font-extrabold text-slate-500">#${p.id}</td>
+                    <td class="p-2.5">
+                        <div class="font-extrabold text-slate-900">${p.name}</div>
+                        <div class="text-[10px] text-slate-500 font-medium">Satuan: ${p.unit}</div>
+                    </td>
+                    <td class="p-2.5">
+                        <span class="bg-slate-200 border border-slate-800 px-2 py-0.5 rounded text-[10px] font-extrabold">${p.category}</span>
+                    </td>
+                    <td class="p-2.5 font-mono font-extrabold text-emerald-700">Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+                    <td class="p-2.5">
+                        <span class="${p.stock === 'Tersedia' ? 'bg-emerald-200 text-emerald-900 border-emerald-800' : 'bg-rose-200 text-rose-900 border-rose-800'} border px-2 py-0.5 rounded text-[10px] font-black">${p.stock}</span>
+                    </td>
+                    <td class="p-2.5 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="editProduct(${index})" class="neo-btn bg-amber-300 hover:bg-amber-400 p-1.5 rounded-lg text-slate-900 text-xs" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteProduct(${index})" class="neo-btn bg-rose-400 hover:bg-rose-500 p-1.5 rounded-lg text-slate-900 text-xs" title="Hapus">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Tambah / Edit Produk
+        function saveProduct(e) {
+            e.preventDefault();
+            const idVal = document.getElementById('p_id').value;
+
+            const newProd = {
+                id: idVal ? parseInt(idVal) : (products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1),
+                name: document.getElementById('p_name').value,
+                category: document.getElementById('p_category').value,
+                price: parseFloat(document.getElementById('p_price').value),
+                wholesaleMin: parseFloat(document.getElementById('p_wholesaleMin').value) || 1,
+                wholesalePrice: parseFloat(document.getElementById('p_wholesalePrice').value) || parseFloat(document.getElementById('p_price').value),
+                stock: document.getElementById('p_stock').value,
+                isPromo: false,
+                unit: document.getElementById('p_unit').value,
+                desc: document.getElementById('p_desc').value || "",
+                icon: "📦",
+                image: "",
+                color: "bg-slate-100 text-slate-700"
+            };
+
+            if (idVal) {
+                const idx = products.findIndex(p => p.id === parseInt(idVal));
+                if (idx !== -1) products[idx] = newProd;
+            } else {
+                products.push(newProd);
+            }
+
+            saveToLocalStorage();
+            renderTable();
+            resetForm();
+        }
+
+        function editProduct(index) {
+            const p = products[index];
+            document.getElementById('formTitle').textContent = 'Edit Produk #' + p.id;
+            document.getElementById('p_id').value = p.id;
+            document.getElementById('p_name').value = p.name;
+            document.getElementById('p_category').value = p.category;
+            document.getElementById('p_unit').value = p.unit;
+            document.getElementById('p_price').value = p.price;
+            document.getElementById('p_stock').value = p.stock;
+            document.getElementById('p_wholesaleMin').value = p.wholesaleMin || '';
+            document.getElementById('p_wholesalePrice').value = p.wholesalePrice || '';
+            document.getElementById('p_desc').value = p.desc || '';
+
+            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update Produk';
+            document.getElementById('submitBtn').className = 'flex-1 neo-btn bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5';
+            document.getElementById('cancelBtn').classList.remove('hidden');
+        }
+
+        function deleteProduct(index) {
+            if (confirm('Yakin ingin menghapus produk ini?')) {
+                products.splice(index, 1);
+                saveToLocalStorage();
+                renderTable();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('formTitle').textContent = 'Tambah Produk Baru';
+            document.getElementById('p_id').value = '';
+            document.getElementById('productForm').reset();
+
+            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Produk';
+            document.getElementById('submitBtn').className = 'flex-1 neo-btn bg-emerald-400 hover:bg-emerald-500 text-slate-900 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5';
+            document.getElementById('cancelBtn').classList.add('hidden');
+        }
+
+        // Download dengan ekstensi products.json.txt
+        function downloadTXT() {
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "products.json.txt");
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+        }
+    </script>
+</body>
+</html>

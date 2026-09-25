@@ -132,6 +132,12 @@
                         </div>
                     </div>
 
+                    <!-- Field Tambahan Input URL/Path Gambar -->
+                    <div>
+                        <label class="font-bold">Path / Link Foto Produk</label>
+                        <input type="text" id="p_image" placeholder="images/Sprite.jpg atau https://..." class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
+                    </div>
+
                     <div>
                         <label class="font-bold">Deskripsi Singkat</label>
                         <input type="text" id="p_desc" placeholder="Rasa Soto Mie" class="w-full neo-input rounded-xl px-3 py-2 mt-1 font-bold">
@@ -173,7 +179,7 @@
                             </tr>
                         </thead>
                         <tbody id="productTableBody" class="divide-y-2 divide-slate-200 text-xs font-bold">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -185,7 +191,6 @@
         let envConfig = { ADMIN_USERNAME: "", ADMIN_PASSWORD: "" };
         let products = [];
 
-        // Muat Konfigurasi .env dan Produk saat Pertama Dimuat
         window.addEventListener('DOMContentLoaded', async () => {
             await loadEnv();
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
@@ -194,7 +199,6 @@
             loadProducts();
         });
 
-        // Pustaka Pembaca File .env yang Aman & Akurat
         async function loadEnv() {
             try {
                 const res = await fetch('.env');
@@ -218,7 +222,6 @@
             }
         }
 
-        // Autentikasi Login (Mendukung .env & Fallback)
         async function handleLogin(e) {
             e.preventDefault();
             
@@ -246,7 +249,6 @@
             location.reload();
         }
 
-        // Load Produk dari LocalStorage / products.json
         async function loadProducts() {
             const savedLocal = localStorage.getItem('esti_products');
             if (savedLocal) {
@@ -269,7 +271,6 @@
             localStorage.setItem('esti_products', JSON.stringify(products));
         }
 
-        // Render Tabel
         function renderTable() {
             const tbody = document.getElementById('productTableBody');
             document.getElementById('productCount').textContent = products.length + ' Barang';
@@ -311,7 +312,6 @@
             });
         }
 
-        // Tambah / Edit Produk
         function saveProduct(e) {
             e.preventDefault();
             const idVal = document.getElementById('p_id').value;
@@ -328,7 +328,7 @@
                 unit: document.getElementById('p_unit').value,
                 desc: document.getElementById('p_desc').value || "",
                 icon: "📦",
-                image: "",
+                image: document.getElementById('p_image').value || "",
                 color: "bg-slate-100 text-slate-700"
             };
 
@@ -355,6 +355,7 @@
             document.getElementById('p_stock').value = p.stock;
             document.getElementById('p_wholesaleMin').value = p.wholesaleMin || '';
             document.getElementById('p_wholesalePrice').value = p.wholesalePrice || '';
+            document.getElementById('p_image').value = p.image || '';
             document.getElementById('p_desc').value = p.desc || '';
 
             document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update Produk';
@@ -380,7 +381,6 @@
             document.getElementById('cancelBtn').classList.add('hidden');
         }
 
-        // Download dengan ekstensi products.json.txt
         function downloadTXT() {
             const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
             const dlAnchorElem = document.createElement('a');

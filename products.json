@@ -266,7 +266,7 @@
     "unit": "Dus",
     "desc": "Bakpia Abon 2000an",
     "icon": "📦",
-    "image": "images/Bakpia-abon-2000.jpg",
+    "image": "images/Bakpia-abon-2000-box.jpg",
     "color": "bg-slate-100 text-slate-700"
   },
   {
@@ -401,7 +401,7 @@
     "unit": "Renteng",
     "desc": "Rasa Matcha dan Teh tarik",
     "icon": "📦",
-    "image": "images/bonteh.jpg",
+    "image": "images/Bonteh.jpg",
     "color": "bg-slate-100 text-slate-700"
   },
   {

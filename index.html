@@ -18,6 +18,7 @@
 </head>
 <body class="min-h-screen text-slate-900 pb-12">
 
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="fixed inset-0 bg-amber-200 z-50 flex items-center justify-center p-4">
         <div class="w-full max-w-md neo-card rounded-2xl p-6 sm:p-8 bg-white">
             <div class="text-center mb-6">
@@ -48,6 +49,7 @@
         </div>
     </div>
 
+    <!-- HEADER -->
     <header class="bg-amber-300 border-b-4 border-slate-900 sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
@@ -71,8 +73,10 @@
         </div>
     </header>
 
+    <!-- MAIN CONTENT -->
     <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
+        <!-- FORM INPUT / EDIT -->
         <div class="lg:col-span-4">
             <div class="neo-card rounded-2xl p-5 sticky top-20">
                 <h3 class="font-extrabold text-base border-b-3 border-slate-900 pb-2 mb-4 flex items-center gap-2">
@@ -117,7 +121,6 @@
                         </div>
                     </div>
 
-                    <!-- Opsi Tambahan Beli Setengah (½) -->
                     <div class="border-t-2 border-dashed border-slate-300 pt-2 my-2">
                         <div class="flex items-center gap-2 mb-2">
                             <input type="checkbox" id="p_canHalf" onchange="toggleHalfInput()" class="w-4 h-4 text-emerald-600 rounded border-2 border-slate-900 focus:ring-0">
@@ -166,17 +169,33 @@
             </div>
         </div>
 
+        <!-- TABEL PRODUK + CARI + PAGINASI -->
         <div class="lg:col-span-8">
             <div class="neo-card rounded-2xl p-5">
-                <div class="flex items-center justify-between border-b-3 border-slate-900 pb-3 mb-4">
-                    <h3 class="font-black text-base flex items-center gap-2">
-                        <i class="fa-solid fa-list text-amber-500"></i> Daftar Produk Memori Browser
-                    </h3>
-                    <span id="productCount" class="bg-emerald-300 text-slate-900 font-black text-xs px-2.5 py-1 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
-                        0 Barang
-                    </span>
+                
+                <!-- HEADER TABEL & SEARCH BAR -->
+                <div class="flex flex-wrap items-center justify-between border-b-3 border-slate-900 pb-3 mb-4 gap-3">
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-black text-base flex items-center gap-2">
+                            <i class="fa-solid fa-list text-amber-500"></i> Daftar Produk Toko
+                        </h3>
+                        <span id="productCount" class="bg-emerald-300 text-slate-900 font-black text-xs px-2.5 py-1 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                            0 Barang
+                        </span>
+                    </div>
+
+                    <div class="w-full sm:w-auto flex-1 max-w-xs">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            oninput="handleSearch()" 
+                            placeholder="🔍 Cari nama produk..." 
+                            class="w-full neo-input rounded-xl px-3 py-1.5 text-xs font-bold"
+                        >
+                    </div>
                 </div>
 
+                <!-- TABEL DATA -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -193,14 +212,34 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- PAGINASI CONTROLS -->
+                <div class="flex items-center justify-between border-t-2 border-slate-900 pt-4 mt-4 text-xs font-extrabold">
+                    <span id="pageInfo" class="text-slate-600">Halaman 1 dari 1</span>
+                    <div class="flex items-center gap-2">
+                        <button id="prevBtn" onclick="changePage(-1)" class="neo-btn bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg">
+                            <i class="fa-solid fa-chevron-left"></i> Prev
+                        </button>
+                        <button id="nextBtn" onclick="changePage(1)" class="neo-btn bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg">
+                            Next <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
 
     </main>
 
+    <!-- LOGIKA JAVASCRIPT -->
     <script>
         let envConfig = { ADMIN_USERNAME: "", ADMIN_PASSWORD: "" };
         let products = [];
+        
+        // Variabel Paginasi & Filter
+        let currentPage = 1;
+        const itemsPerPage = 50; // Tampilkan 50 barang per halaman
+        let filteredProducts = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
             await loadEnv();
@@ -226,7 +265,6 @@
                             }
                         }
                     });
-                    console.log(".env berhasil dimuat! Config:", envConfig);
                 }
             } catch (err) {
                 console.warn('File .env tidak ditemukan, menggunakan nilai fallback.');
@@ -235,10 +273,7 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            
-            if (!envConfig.ADMIN_USERNAME) {
-                await loadEnv();
-            }
+            if (!envConfig.ADMIN_USERNAME) await loadEnv();
 
             const uInput = document.getElementById('loginUsername').value.trim();
             const pInput = document.getElementById('loginPassword').value.trim();
@@ -260,56 +295,60 @@
             location.reload();
         }
 
+        // BACA SINKRON LANGSUNG DARI FILE PRODUCTS.JSON
         async function loadProducts() {
-            const savedLocal = localStorage.getItem('esti_products');
-            if (savedLocal) {
-                products = JSON.parse(savedLocal);
-            } else {
-                try {
-                    const res = await fetch('products.json');
-                    if (res.ok) {
-                        products = await res.json();
-                        saveToLocalStorage();
-                    }
-                } catch (err) {
-                    console.log('File products.json belum ada.');
+            try {
+                // Parameter ?t= timestamp agar browser tidak meng-cache data lama
+                const res = await fetch('products.json?t=' + new Date().getTime());
+                if (res.ok) {
+                    products = await res.json();
                 }
+            } catch (err) {
+                console.warn('File products.json belum ada atau gagal dimuat.');
             }
             renderTable();
         }
 
-        function saveToLocalStorage() {
-            localStorage.setItem('esti_products', JSON.stringify(products));
-        }
-
-        function toggleHalfInput() {
-            const isChecked = document.getElementById('p_canHalf').checked;
-            const container = document.getElementById('halfPriceContainer');
-            if (isChecked) {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-                document.getElementById('p_halfPrice').value = '';
-            }
+        function handleSearch() {
+            currentPage = 1; // Reset ke halaman pertama saat melakukan pencarian
+            renderTable();
         }
 
         function renderTable() {
             const tbody = document.getElementById('productTableBody');
-            document.getElementById('productCount').textContent = products.length + ' Barang';
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // Filter produk berdasarkan nama
+            filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm));
+
+            document.getElementById('productCount').textContent = filteredProducts.length + ' Barang';
             tbody.innerHTML = '';
 
-            if (products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Belum ada produk. Silakan tambah produk baru!</td></tr>`;
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Produk tidak ditemukan.</td></tr>`;
+                updatePaginationControls(0);
                 return;
             }
 
-            products.forEach((p, index) => {
+            // Hitung batasan paginasi
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = filteredProducts.slice(startIndex, endIndex);
+
+            // Render hanya data untuk halaman aktif
+            paginatedItems.forEach((p) => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
                 
                 const halfBadge = p.canHalf 
                     ? `<span class="bg-amber-200 text-amber-900 border border-amber-800 px-1.5 py-0.5 rounded text-[9px] font-extrabold ml-1">Bisa ½ (Rp ${Number(p.halfPrice || 0).toLocaleString('id-ID')})</span>` 
                     : '';
+
+                const originalIndex = products.findIndex(item => item.id === p.id);
 
                 tr.innerHTML = `
                     <td class="p-2.5 font-extrabold text-slate-500">#${p.id}</td>
@@ -326,10 +365,10 @@
                     </td>
                     <td class="p-2.5 text-center">
                         <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="editProduct(${index})" class="neo-btn bg-amber-300 hover:bg-amber-400 p-1.5 rounded-lg text-slate-900 text-xs" title="Edit">
+                            <button onclick="editProduct(${originalIndex})" class="neo-btn bg-amber-300 hover:bg-amber-400 p-1.5 rounded-lg text-slate-900 text-xs" title="Edit">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onclick="deleteProduct(${index})" class="neo-btn bg-rose-400 hover:bg-rose-500 p-1.5 rounded-lg text-slate-900 text-xs" title="Hapus">
+                            <button onclick="deleteProduct(${originalIndex})" class="neo-btn bg-rose-400 hover:bg-rose-500 p-1.5 rounded-lg text-slate-900 text-xs" title="Hapus">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -337,6 +376,46 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            updatePaginationControls(totalPages);
+        }
+
+        function updatePaginationControls(totalPages) {
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (!pageInfo || !prevBtn || !nextBtn) return;
+
+            if (totalPages === 0) {
+                pageInfo.textContent = 'Halaman 0 dari 0';
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                return;
+            }
+
+            pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderTable();
+        }
+
+        function toggleHalfInput() {
+            const isChecked = document.getElementById('p_canHalf').checked;
+            const container = document.getElementById('halfPriceContainer');
+            if (isChecked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+                document.getElementById('p_halfPrice').value = '';
+            }
         }
 
         function saveProduct(e) {
@@ -369,7 +448,6 @@
                 products.push(newProd);
             }
 
-            saveToLocalStorage();
             renderTable();
             resetForm();
         }
@@ -401,7 +479,6 @@
         function deleteProduct(index) {
             if (confirm('Yakin ingin menghapus produk ini?')) {
                 products.splice(index, 1);
-                saveToLocalStorage();
                 renderTable();
             }
         }

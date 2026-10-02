@@ -302,7 +302,7 @@
     "unit": "Dus",
     "desc": "Bakpia Abon 2000an",
     "icon": "📦",
-    "image": "images/Bakpia-abon-2000.jpg",
+    "image": "images/Bakpia-abon-2000-box.jpg",
     "color": "bg-slate-100 text-slate-700"
   },
   {
@@ -489,7 +489,7 @@
     "unit": "Pcs",
     "desc": "Rasa Matcha,Coklat,Strawberry",
     "icon": "📦",
-    "image": "images/Bravo-cocholate.jpg",
+    "image": "images/Bravo-chocolate.jpg",
     "color": "bg-slate-100 text-slate-700"
   },
   {
@@ -847,23 +847,6 @@
     "desc": "",
     "icon": "📦",
     "image": "images/Choki-stix.jpg",
-    "color": "bg-slate-100 text-slate-700"
-  },
-  {
-    "id": 51,
-    "name": "Roti Donat",
-    "category": "Makanan Ringan",
-    "price": 2000,
-    "canHalf": false,
-    "halfPrice": 0,
-    "wholesaleMin": 5,
-    "wholesalePrice": 1800,
-    "stock": "Tersedia",
-    "isPromo": false,
-    "unit": "Pcs",
-    "desc": "Beli dibawah 5 harga Rp 2.000, beli >= 5 harga Rp 1.800/pcs",
-    "icon": "📦",
-    "image": "images/Roti-donat.jpg",
     "color": "bg-slate-100 text-slate-700"
   }
 ]
